@@ -3,17 +3,25 @@ class WSConnection:
         self.scope = scope
         self.receive = receive
         self.send = send
+        self.extra_headers = []
+        self.active = False
+        self.authenticated = False
 
     async def accept(self):
-        await self.send({
+        self.__add_subprotocol_to_response()
+        response_dict = {
             "type": "websocket.accept",
-        })
+            "headers": self.extra_headers
+        }
+        await self.send(response_dict)
+        self.active = True
 
     async def close(self, code=1000):
         await self.send({
             "type": "websocket.close",
             "code": code
         })
+        self.active = False
 
     async def receive_text(self):
         event = await self.receive()
@@ -28,3 +36,35 @@ class WSConnection:
             "text": message
         })
 
+    def __add_subprotocol_to_response(self):
+        if self.subprotocols:
+            self.extra_headers.append((
+                'Sec-WebSocket-Protocol'.encode(),
+                self.subprotocols[0].encode()
+            ))
+
+    def add_header(self, header_name, header_value):
+        self.extra_headers.append((
+            header_name.encode(),
+            header_value.encode()
+        ))
+
+    def add_headers(self, headers_dict):
+        for header_name, header_value in headers_dict:
+            self.extra_headers.append((
+                header_name.encode(),
+                header_value.encode()
+            ))
+
+    async def send_ping(self):
+        await self.send({
+            "type": "websocket.ping"
+        })
+
+    @property
+    def path(self):
+        return self.scope.get('path')
+
+    @property
+    def subprotocols(self):
+        return self.scope.get('subprotocols')

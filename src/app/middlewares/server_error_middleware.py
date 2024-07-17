@@ -1,17 +1,14 @@
-from typing import Callable
-
+import traceback
 from src.app.connection import WSConnection
+from src.app.middlewares import _MiddlewareClass
 
 
 class ServerErrorMiddleware:
-    def __init__(self, call_next: Callable) -> None:
+    def __init__(self, call_next: _MiddlewareClass) -> None:
         self.call_next = call_next
 
     async def __call__(self, connection: WSConnection) -> None:
         try:
             await self.call_next(connection)
-            return
         except Exception as e:
-            print(e)
-
-
+            traceback.print_exception(e)
