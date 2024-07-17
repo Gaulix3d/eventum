@@ -1,5 +1,3 @@
-import asyncio
-import traceback
 from src.app.connection import WSConnection
 from src.app.connections import Connections
 from src.app.event_listener import EventListener
@@ -16,7 +14,6 @@ class Eventum:
         self.router = Router(event_listener=self.event_listener)
         self.__middleware_constr = MiddlewareChain(router=self.router)
         self.lifespan = Lifespan()
-
 
     async def __call__(self, scope, receive, send):
         scope['app'] = self

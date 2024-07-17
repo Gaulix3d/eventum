@@ -1,10 +1,12 @@
 import functools
 from src.app.connection import WSConnection
+from src.app.event_listener import EventListener
 
 
 class Router:
-    def __init__(self):
+    def __init__(self, event_listener: EventListener):
         self.routes = {}
+        self.event_listener = event_listener
 
     async def __call__(self, connection: WSConnection):
         path = self.routes.get(connection.path)
