@@ -1,5 +1,4 @@
 from src.app.connection import WSConnection
-from src.app.connections import Connections
 from src.app.event_listener import EventListener
 from src.app.lifespan import Lifespan
 from src.app.middleware_chain import MiddlewareChain
@@ -9,8 +8,7 @@ from src.app.routing import Router
 class Eventum:
     def __init__(self):
         self.middleware_stack = None
-        self.connections = Connections()
-        self.event_listener = EventListener(connections=self.connections)
+        self.event_listener = EventListener()
         self.router = Router(event_listener=self.event_listener)
         self.__middleware_constr = MiddlewareChain(router=self.router)
         self.lifespan = Lifespan()
@@ -30,6 +28,9 @@ class Eventum:
 
     def route(self, path):
         return self.router.route(path=path)
+
+    def event(self, event, validator=None):
+        return self.event_listener.event_dec(event, validator=validator)
 
     def on_startup(self):
         return self.lifespan.on_startup_dec()

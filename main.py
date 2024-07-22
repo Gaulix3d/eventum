@@ -1,13 +1,20 @@
 import uvicorn
 from src.app.app import Eventum
 from src.app.connection import WSConnection
+from src.app.exceptions.ws_exception import WSException
 
 app = Eventum()
 
 
+@app.event('dummy')
+async def event_happened(connection: WSConnection, data: dict):
+    print(data)
+    raise WSException(code=3000, reason='You gay')
+
+
 @app.route('/')
 async def index(connection: WSConnection):
-    pass
+    await connection.accept()
 
 
 @app.route('/andrey')

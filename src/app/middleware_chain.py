@@ -1,4 +1,5 @@
 from src.app.middlewares import Middleware
+from src.app.middlewares.exceptions_middleware import ExceptionMiddleware
 from src.app.middlewares.server_error_middleware import ServerErrorMiddleware
 
 
@@ -14,6 +15,7 @@ class MiddlewareChain:
         middleware = (
                 [Middleware(ServerErrorMiddleware)]
                 + self.__user_middlewares
+                + [Middleware(ExceptionMiddleware)]
         )
         call_next = self.router
         for cls, args, kwargs in reversed(middleware):

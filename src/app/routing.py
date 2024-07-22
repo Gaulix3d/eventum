@@ -13,6 +13,7 @@ class Router:
         if path:
             handler = path['handler']
             await handler(connection)
+            await self.event_listener.listen(connection)
         else:
             print("no route")
 

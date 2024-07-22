@@ -16,10 +16,12 @@ class WSConnection:
         await self.send(response_dict)
         self.active = True
 
-    async def close(self, code=1000):
+    async def close(self, code=1000, reason=""):
+        print(reason)
         await self.send({
             "type": "websocket.close",
-            "code": code
+            "code": code,
+            "reason": reason
         })
         self.active = False
 

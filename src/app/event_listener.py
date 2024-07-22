@@ -1,37 +1,47 @@
+import asyncio
 import functools
 import orjson
 from src.app.connection import WSConnection
-from src.app.connections import Connections
 
 
 class EventListener:
-    def __init__(self, connections: Connections):
-        self.connections = connections
+    def __init__(self):
         self.events = {}
 
-    #TODO: finish tomorrow
-    def route_event(self, event: str, data: dict):
-        pass
+    async def route_event(self, event: str, data: dict, connection: WSConnection):
+        print(connection, data)
+        event_path = self.events.get(event)
+        if event_path:
+            handler = event_path['handler']
+            await handler(connection=connection, data=data)
+        else:
+            print("no event route")
 
     def event_dec(self, event_name, validator=None):
         def decorator(func):
             @functools.wraps(func)
-            async def wrapped_handler(connection: WSConnection, *args, **kwargs):
-                return await func(connection, *args, **kwargs)
+            async def wrapped_handler(connection: WSConnection, data, *args, **kwargs):
+                return await func(connection, data, *args, **kwargs)
             self.events[event_name] = {'handler': wrapped_handler, 'validator': validator}
             return wrapped_handler
         return decorator
 
-    async def print_them(self):
+    async def listen(self, connection: WSConnection):
         while True:
-            async for connection in self.connections:
-                data = await connection.receive_text()
-                if data:
-                    print(data)
+            message = await connection.receive_text()
+            if message:
+                try:
+                    json_message = self.parse_message(message)
+                    event = json_message.get('event')
+                    if event:
+                        await self.route_event(connection=connection, event=event, data=json_message)
+                except Exception as e:
+                    raise e
 
     @staticmethod
-    def parse_event(event: str):
+    def parse_message(message: str):
         try:
-            orjson.loads(event)
+            json_message = orjson.loads(message)
+            return json_message
         except orjson.JSONDecodeError as e:
             raise e
