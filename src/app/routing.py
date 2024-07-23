@@ -8,7 +8,7 @@ class Router:
         self.routes = {}
         self.event_listener = event_listener
 
-    async def __call__(self, connection: WSConnection):
+    async def __call__(self, connection: WSConnection) -> None:
         path = self.routes.get(connection.path)
         if path:
             handler = path['handler']

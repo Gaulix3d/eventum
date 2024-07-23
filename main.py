@@ -9,7 +9,7 @@ app = Eventum()
 @app.event('dummy')
 async def event_happened(connection: WSConnection, data: dict):
     print(data)
-    raise WSException(code=3000, reason='You gay')
+    raise WSException(code=3000, reason='wow')
 
 
 @app.route('/')

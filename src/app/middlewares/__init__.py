@@ -1,7 +1,7 @@
 from __future__ import annotations
-
 import sys
-from typing import Any, Iterator, Protocol
+from abc import abstractmethod
+from typing import Any, Iterator, Protocol, Generic, TypeVar
 from src.app.connection import WSConnection
 
 if sys.version_info >= (3, 10):  # pragma: no cover
@@ -14,14 +14,19 @@ P = ParamSpec("P")
 
 
 class _MiddlewareClass(Protocol[P]):
-    def __init__(self, call_next, *args: P.args, **kwargs: P.kwargs) -> None:
+    @abstractmethod
+    def __init__(self, call_next: _MiddlewareClass, *args: P.args, **kwargs: P.kwargs) -> None:
         ...  # pragma: no cover
 
+    @abstractmethod
     async def __call__(self, connection: WSConnection) -> None:
         ...  # pragma: no cover
 
 
-class Middleware:
+T = TypeVar('T', bound=_MiddlewareClass)
+
+
+class Middleware(Generic[T]):
     def __init__(
         self,
         cls: type[_MiddlewareClass[P]],
